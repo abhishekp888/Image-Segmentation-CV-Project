@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Segmentation Tool</title>
+
+    <style>
+      /* General Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: linear-gradient(120deg, #88d9d6, #2f8f83);
+        color: #ffffff;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        animation: fadeIn 1.2s ease-in-out;
+      }
+
+      header {
+        margin-bottom: 30px;
+        animation: slideInDown 1s ease-out;
+      }
+
+      header h1 {
+        font-size: 3rem;
+        font-weight: bold;
+        text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        color: #ffffff;
+      }
+
+      .main-content {
+        background: rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 30px;
+        width: 100%;
+        max-width: 900px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        animation: fadeInUp 1.5s ease-out;
+      }
+
+      .upload-section {
+        margin-bottom: 40px;
+      }
+
+      .upload-section h2 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      input[type="file"] {
+        border: 3px dashed rgba(255, 255, 255, 0.8);
+        padding: 15px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        outline: none;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+      }
+
+      input[type="file"]:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: #ffffff;
+      }
+
+      button[type="submit"] {
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        background: linear-gradient(45deg, #6de3d1, #2ebdb4);
+        color: #ffffff;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      button[type="submit"]:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      #statusMessage {
+        margin-top: 20px;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .results-section {
+        margin-top: 40px;
+        display: grid;
+        gap: 30px;
+        justify-content: center;
+      }
+
+      .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 25px;
+      }
+
+      .result-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .result-card h4 {
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+
+      .result-card img {
+        width: 100%;
+        border-radius: 12px;
+        max-height: 200px;
+        object-fit: cover;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      footer {
+        margin-top: 40px;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      footer p {
+        animation: fadeIn 2s ease-in-out;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes slideInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Image Segmentation Tool</h1>
+    </header>
+
+    <div class="main-content">
+      <div class="upload-section">
+        <h2>Upload an Image for Segmentation</h2>
+        <form id="uploadForm">
+          <input type="file" id="imageInput" accept="image/*" required />
+          <button type="submit">Process Image</button>
+        </form>
+        <p id="statusMessage"></p>
+      </div>
+
+      <div id="outputContainer" class="results-section" style="display: none">
+        <h3>Segmentation Results:</h3>
+        <div class="results-grid">
+          <div class="result-card">
+            <h4>Threshold</h4>
+            <img id="thresholdImage" alt="Threshold" />
+          </div>
+          <div class="result-card">
+            <h4>Canny Edge</h4>
+            <img id="cannyImage" alt="Canny Edge" />
+          </div>
+          <div class="result-card">
+            <h4>Watershed</h4>
+            <img id="watershedImage" alt="Watershed" />
+          </div>
+          <div class="result-card">
+            <h4>K-Means</h4>
+            <img id="kmeansImage" alt="K-Means" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; ABHISHEK PAWAR GROUP 3</p>
+    </footer>
+
+    <script>
+      const uploadForm = document.getElementById("uploadForm");
+      const imageInput = document.getElementById("imageInput");
+      const statusMessage = document.getElementById("statusMessage");
+      const outputContainer = document.getElementById("outputContainer");
+      const thresholdImage = document.getElementById("thresholdImage");
+      const cannyImage = document.getElementById("cannyImage");
+      const watershedImage = document.getElementById("watershedImage");
+      const kmeansImage = document.getElementById("kmeansImage");
+
+      uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        statusMessage.textContent = "Processing...";
+        outputContainer.style.display = "none";
+
+        const formData = new FormData();
+        formData.append("image", imageInput.files[0]);
+
+        try {
+          const response = await fetch(
+            "https://pranjalsharma.pythonanywhere.com/segment",
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+
+          if (response.ok) {
+            const results = await response.json();
+            thresholdImage.src = `data:image/jpeg;base64,${results.threshold}`;
+            cannyImage.src = `data:image/jpeg;base64,${results.canny}`;
+            watershedImage.src = `data:image/jpeg;base64,${results.watershed}`;
+            kmeansImage.src = `data:image/jpeg;base64,${results.kmeans}`;
+
+            outputContainer.style.display = "block";
+            statusMessage.textContent = "Segmentation Complete!";
+          } else {
+            statusMessage.textContent = "Error processing the image.";
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          statusMessage.textContent = "Failed to connect to the server.";
+        }
+      });
+    </script>
+  </body>
+</html>
